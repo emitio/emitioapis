@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+// EmitHeader MUST be the first message sent on a new Emit RPC bi-directional
+// link to identify the stream.
+message EmitHeader {
+    // name is a required non-alterable user-friendly value to identify the source
+    // of the data. This is likely the name of the binary generating data, e.g. nginx.
+    string name = 1; 
+    // presence is an identifier for the stream that if set allows for resuming
+    // the stream should the streamer need to restart. If left blank, the stream
+    // will be considered finished when the stream closes.
+    string presence = 2;
+}
+
+// EmitMeta may be sent at any time to alter the metadata associated with a stream.
+message EmitMeta {
+    // meta is arbitrary labels that may be mutated over time and are used in data
+    // selection for defining a service.
+    map<string,string> meta = 1;
+}
+
+// EmitBody is the raw data forming the stream. In the case of file tailing, this is a single
+// line. The agent may reject large bodies.
+message EmitBody {
+    bytes body = 1;
+}
+
+// EmitInput enumerates the distinct messages that may be sent to the agent.
+message EmitInput {
+    oneof inputs {
+        EmitHeader header = 1;
+        EmitMeta meta = 2;
+        EmitBody body = 3;
+    }
+}
+
+// EmitOutput may be returned by the emitio agent throughout the life of the
+// stream. 
+message EmitOutput {
+    oneof outputs {
+        EmitTrigger trigger = 1;
+    }
+}
+
+// EmitTrigger is a remote signal to cause the agent to take an action.
+message EmitTrigger {
+    // trigger is arbitrary bytes left undefined for interpretation and extension by the emitio
+    // control plane and the individual agents to negotiate.
+    bytes trigger = 1;
+}
+
+// EmitIO is the public interface to the agent.
+service EmitIO {
+    rpc Emit(stream EmitInput) returns (stream EmitOutput){}
+}
