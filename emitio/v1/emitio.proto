@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-import "span.proto";
+import "emitio/v1/span.proto";
 
 message EmitRequest {
   repeated Span spans = 1;
