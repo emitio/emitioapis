@@ -14,10 +14,10 @@
 
 syntax = "proto3";
 
-import "operation.proto";
+import "span.proto";
 
 message EmitRequest {
-  Operation operation = 1;
+  repeated Span spans = 1;
 }
 
 // EmitResponse is currently empty but present as a placeholder for the future.
